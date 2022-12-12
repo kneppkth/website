@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  website:
+    build: .
+    stdin_open: true
+    tty: true
+    working_dir: /backend
+    entrypoint: make
+    command: runserver
+    restart: on-failure
+    networks:
+      - knepp
+    volumes:
+      - ./backend:/website/backend
+      - internal-media:/website/internal_media/
+    ports:
+      - 8000:8000
+    depends_on:
+      - database
+    env_file:
+      - envs/local.env
+  database:
+    image: postgres:13
+    ports:
+      - 5432:5432
+    networks:
+      - knepp
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: knepp
+      POSTGRES_PASSWORD: knepp
+      POSTGRES_DB: knepp
+
+volumes:
+  internal-media:
+  postgres-data:
+
+networks:
+  knepp:
