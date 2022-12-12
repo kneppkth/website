@@ -8,7 +8,7 @@ from versatileimagefield.fields import VersatileImageField
 
 from knepp.storage import OverwriteStorage
 from knepp.db.mixins import Timestamps, StandardModel
-from user.enums import GenderType
+from user.enums import GenderType, MembershipType
 from user.managers import UserManager
 
 
@@ -35,6 +35,8 @@ class User(AbstractBaseUser, StandardModel, Timestamps, PermissionsMixin):
     verify_expiration = models.DateTimeField(default=timezone.now)
 
     registration_finished = models.BooleanField(default=False)
+
+    kth_card = models.CharField(max_length=255, blank=True, null=True)
 
     # Personal information
     picture = VersatileImageField(
@@ -89,3 +91,24 @@ class THSRegistration(StandardModel, Timestamps):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_from = models.DateField()
     date_to = models.DateField()
+
+
+class Membership(StandardModel, Timestamps):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    type = models.PositiveSmallIntegerField(
+        choices=((mt.value, mt.name) for mt in MembershipType),
+        default=MembershipType.FREE,
+    )
+    is_paid = models.BooleanField(default=False)
+    has_access = models.BooleanField(default=False)
+    date_from = models.DateField()
+    date_to = models.DateField()
+
+    def clean(self):
+        super().clean()
+        if self.type == MembershipType.FREE:
+            self.is_paid = True
+            self.has_access = True
+
+    def __str__(self) -> str:
+        return f"{self.user}: {MembershipType(self.type).name} ({self.date_from.strftime('%Y-%m-%d')} - {self.date_to.strftime('%Y-%m-%d')})"

@@ -44,3 +44,8 @@ DietType.labels = {
     DietType.OTHER: _("other"),
 }
 DietTypeDict = DietType.labels
+
+
+class MembershipType(enum.IntEnum):
+    FREE = 0
+    DARKROOM = 1
