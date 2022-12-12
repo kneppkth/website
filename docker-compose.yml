@@ -1,19 +1,19 @@
 version: "3.9"
 
 services:
-  website:
+  backend:
     build: .
     stdin_open: true
     tty: true
     working_dir: /backend
-    entrypoint: make
-    command: runserver
     restart: on-failure
+    entrypoint: ["wait-for-it", "database:5432", "--", "python", "manage.py"]
+    command: ["runserver", "0.0.0.0:8000"]
     networks:
       - knepp
     volumes:
-      - ./backend:/website/backend
-      - internal-media:/website/internal_media/
+      - ./backend:/backend/backend:cached
+      - internal-media:/backend/internal_media/:cached
     ports:
       - 8000:8000
     depends_on:

@@ -44,6 +44,7 @@ ENV APT_GETTEXT_VERSION 0.21-*
 ENV APT_MAKE_VERSION 4.3-*
 ENV APT_WAIT_FOR_IT_VERSION 0.0~git20180723-1
 ENV APT_MIME_SUPPORT 3.*
+ENV APT_LIB_MAGIC_DEV 1:5.39-*
 
 # Django settings
 ENV DJANGO_SETTINGS_MODULE knepp.settings
@@ -60,16 +61,17 @@ RUN set -x && apt-get update && apt-get install --no-install-recommends -y \
     gettext=$APT_GETTEXT_VERSION \
     make=$APT_MAKE_VERSION \
     wait-for-it=$APT_WAIT_FOR_IT_VERSION \
-    mime-support=$APT_MIME_SUPPORT
+    mime-support=$APT_MIME_SUPPORT \
+    libmagic-dev=$APT_LIB_MAGIC_DEV
 
 RUN mkdir /data && chown -R backend:backend /data
 
 # Install source code
-WORKDIR /backend
 USER backend
 COPY --chown=backend Makefile ./
-COPY --from=builder /backend/venv venv
-COPY --chown=backend backend .
+COPY --from=builder /backend/venv backend/venv
+COPY --chown=backend backend backend
+WORKDIR /backend
 
 # Collect static files
 RUN set -x && \
